@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 
 setup(
     name='pylsat',
-    version='0.2.3',
+    version='0.2.5',
     packages=find_packages(),
     install_requires=[
-        'fastapi', 
-        'starlette', 
+        'fastapi',
+        'starlette',
         'pymacaroons'
     ],
     url='https://github.com/plebos/pylsat',
@@ -14,5 +14,4 @@ setup(
     author='Tal Shmueli',
     author_email='tal@shmueli.org',
     description='A Python library for validating L402 (formerly known as LSAT) protocol for Lightning Network payments in a FastAPI application.'
-
 )
