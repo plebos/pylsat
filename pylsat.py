@@ -5,8 +5,7 @@ from pymacaroons import Macaroon, Verifier
 import datetime
 import hashlib
 import uuid
-from bolt11.core import decode
-
+from vendor.bolt11.core import decode
 
 class L402Validator:
     """

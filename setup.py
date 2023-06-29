@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pylsat',
-    version='0.1',
+    version='0.2.1',
     packages=find_packages(),
     install_requires=[
         'fastapi', 
@@ -10,12 +10,12 @@ setup(
         'pymacaroons', 
         'datetime', 
         'hashlib', 
-        'uuid',
-        'bolt11 @ git+https://github.com/lnbits/bolt11.git',
+        'uuid'
     ],
     url='https://github.com/plebos/pylsat',
     license='MIT',
     author='Tal Shmueli',
     author_email='tal@shmueli.org',
-    description='A Python library for validating Lightning Service Authentication Tokens (LSAT) in a FastAPI application.'
+    description='A Python library for validating L402 (formerly known as LSAT) protocol for Lightning Network payments in a FastAPI application.'
+
 )
