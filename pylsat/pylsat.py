@@ -56,21 +56,18 @@ class InvoiceFunction(Protocol):
 
 
 class L402Validator:
-    """
-    Middleware for validating L402 (Lightning Service Authentication Tokens) in a FastAPI application.
-    
-    Attributes:
-        root_key: The root key for generating and verifying macaroons.
-        price_sats: The price (in satoshis) for accessing the API endpoint.
-        expiry_sec: The expiration time (in seconds) for the macaroon.
-        generate_invoice: A function for generating Lightning Network invoices.
-        verified_macaroons: A dictionary for caching verified macaroons to ensure they are used only once.
-        cleanup_interval: The interval (in seconds) at which expired macaroons are cleaned up from the cache.
-    """
     def __init__(self, root_key: str, expiry_sec: int, generate_invoice_func : InvoiceFunction, invoice_description: str, pricing: Pricing ):
         """
-        Initializes the L402Validator with the root key, price, expiry time, and invoice generation function.
-        Starts the cleanup task for expired macaroons.
+        Initializes the L402Validator.
+
+        Args:
+            root_key (str): The root key for generating and verifying macaroons.
+            expiry_sec (int): The expiration time (in seconds) for the macaroon.
+            generate_invoice_func (InvoiceFunction): A function for generating Lightning Network invoices.
+            invoice_description (str): A description to be included in the generated invoices.
+            pricing (Pricing): A Pricing object that encapsulates the pricing information. The object contains either the price in satoshis or the price in fiat, along with a conversion function for converting fiat to satoshis if the price is provided in fiat.
+
+        The function also starts a cleanup task for expired macaroons.
         """
         
         self.root_key = root_key
@@ -153,3 +150,4 @@ class L402Validator:
                 self.verified_macaroons[macaroon.identifier] = caveat.caveat_id.split(' = ')[1]
 
         return request  # Add this line
+    
