@@ -5,7 +5,55 @@ from pymacaroons import Macaroon, Verifier
 import datetime
 import hashlib
 import uuid
+import inspect
 from vendor.bolt11.core import decode
+from typing import Optional, Callable, Dict, Protocol
+from pydantic import BaseModel
+
+class Pricing:
+    """
+    Pricing class for encapsulating price information.
+    
+    Attributes:
+        price_sats: The price in satoshis. None if pricing is in fiat.
+        price_fiat: The price in fiat. None if pricing is in sats.
+        conversion_func: A function that converts fiat to satoshis.
+    """
+    def __init__(self, price_sats: Optional[int] = None, price_fiat: Optional[float] = None, 
+                 conversion_func: Optional[Callable[[float], int]] = None):
+
+        if price_sats is not None and price_fiat is not None:
+            raise ValueError("Must specify either price_sats or price_fiat, but not both.")
+        elif price_sats is None and price_fiat is None:
+            raise ValueError("Must specify either price_sats or price_fiat.")
+
+        if price_fiat is not None and conversion_func is None:
+            raise ValueError("Must provide a conversion function when pricing in fiat.")
+
+        self.price_sats = price_sats
+        self.price_fiat = price_fiat
+        self.conversion_func = conversion_func
+
+    async def get_price_sats(self) -> int:
+        if self.price_sats is not None:
+            return self.price_sats
+        else:
+            if inspect.iscoroutinefunction(self.conversion_func):
+                return await self.conversion_func(self.price_fiat)
+            else:
+                return self.conversion_func(self.price_fiat)
+
+
+
+class InvoiceDict(BaseModel):
+    bolt11: str
+
+    class Config:
+        extra = "allow"
+
+class InvoiceFunction(Protocol):
+    def __call__(self, price_sats: int, label: str, description: str) -> InvoiceDict: ...
+
 
 class L402Validator:
     """
@@ -19,16 +67,17 @@ class L402Validator:
         verified_macaroons: A dictionary for caching verified macaroons to ensure they are used only once.
         cleanup_interval: The interval (in seconds) at which expired macaroons are cleaned up from the cache.
     """
-    def __init__(self, root_key: str, price_sats: int, expiry_sec: int, generate_invoice_func):
+    def __init__(self, root_key: str, expiry_sec: int, generate_invoice_func : InvoiceFunction, invoice_description: str, pricing: Pricing ):
         """
         Initializes the L402Validator with the root key, price, expiry time, and invoice generation function.
         Starts the cleanup task for expired macaroons.
         """
         
         self.root_key = root_key
-        self.price_sats = price_sats
+        self.pricing = pricing
         self.expiry_sec = expiry_sec
         self.generate_invoice = generate_invoice_func
+        self.invoice_description = invoice_description
         self.verified_macaroons = {}  # Cache to store verified macaroons
         self.cleanup_interval = 60 * 10  # Cleanup interval in seconds (10 minutes)
         asyncio.create_task(self.cleanup_expired_macaroons())  # Start the cleanup task
@@ -52,7 +101,7 @@ class L402Validator:
 
             try:
                 label = str(uuid.uuid4()) 
-                invoice = await self.generate_invoice(self.price_sats, f'LSAT_{label}', f'payment for endpoint')  # function to generate invoice
+                invoice = await self.generate_invoice(await self.pricing.get_price_sats(), f'LSAT_{label}', self.invoice_description )  # function to generate invoice
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Couldn't generate invoice. Reason: {str(e)}")
 
