@@ -2,15 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='pylsat',
-    version='0.2.1',
+    version='0.2.2',
     packages=find_packages(),
     install_requires=[
         'fastapi', 
         'starlette', 
-        'pymacaroons', 
-        'datetime', 
-        'hashlib', 
-        'uuid'
+        'pymacaroons'
     ],
     url='https://github.com/plebos/pylsat',
     license='MIT',
