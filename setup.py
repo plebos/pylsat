@@ -10,8 +10,8 @@ setup(
         'pymacaroons', 
         'datetime', 
         'hashlib', 
-        'uuid', 
-        'bolt11'
+        'uuid',
+        'bolt11 @ git+https://github.com/lnbits/bolt11.git',
     ],
     url='https://github.com/plebos/pylsat',
     license='MIT',
