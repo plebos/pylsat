@@ -11,7 +11,7 @@ pip install pylsat
 ```
 
 ## Usage
-In your FastAPI application, you would use pylsat as middleware. First, initialize the Pricing class with either price_sats or price_fiat along with a conversion_func if pricing in fiat. Then, initialize the L402Validator with the root key, expiry time, the function for generating invoices, the invoice description, and the pricing object. Finally, use it as a dependency in your route handlers.
+In your FastAPI application, you would use pylsat as middleware. First, initialize the Pricing class with either price_sats or price_fiat along with a conversion_func if pricing in fiat. Then, initialize the L402Validator with the root key, expiry time, the function for generating invoices, the invoice description, and the pricing object. Finally, use it in your route handlers.
 
 Here is an example:
 ```python
@@ -41,7 +41,8 @@ validator = L402Validator(
 )
 
 @app.post("/api/premium/endpoint", status_code=201)
-async def premium_endpoint(background_tasks: BackgroundTasks, request: Request = Depends(validator)):
+async def premium_endpoint(background_tasks: BackgroundTasks, request: Request):
+    validator(request)
     # Your route handler logic here
     pass
 ```
